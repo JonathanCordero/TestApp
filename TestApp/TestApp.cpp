@@ -107,7 +107,7 @@ QPair<double, double> TestApp::parseGeocodingJson(const QByteArray& jsonData) {
 }
 
 void TestApp::weatherBringer(const QPair<double, double>& coordinates) {
-    QString url = QString("https://api.open-meteo.com/v1/forecast?latitude=%1&longitude=%2&current_weather=true")
+    QString url = QString("https://api.open-meteo.com/v1/forecast?latitude=%1&longitude=%2&current_weather=true&temperature_unit=fahrenheit")
         .arg(coordinates.first)
         .arg(coordinates.second);
     QUrl apiUrl(url);
@@ -169,10 +169,9 @@ QString TestApp::parseWeatherJson(const QByteArray& jsonData) {
     QString weather = currentWeather["weathercode"].toString();
 
     return QString(
-        "Temperature: %1°C\n"
+        "Temperature: %1°F\n"
         "Wind Speed: %2 km/h\n"
-        "Weather: %3"
-    ).arg(temperature).arg(windSpeed).arg(weather);
+        "Weather: %3").arg(temperature, 0, 'f', 1).arg(windSpeed).arg(weather);
 }
 
 void TestApp::updateWeatherLabel(const QString& weatherInfo) {
