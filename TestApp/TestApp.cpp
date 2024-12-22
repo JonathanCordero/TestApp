@@ -1,6 +1,4 @@
 #include "TestApp.h"
-
-#include "TestApp.h"
 #include <QDebug>
 #include <Qlabel>
 #include <QNetworkAccessManager>
@@ -9,7 +7,7 @@
 #include <qpushbutton>
 #include <QUrl>
 #include <qthread.h>
-#include<qjsonarray>
+#include <qjsonarray>
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 
@@ -29,6 +27,7 @@ TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAcc
             return;
         }
         getCoordinates(city);
+        ui.lineEdit->setPlaceholderText("Enter another city name");
         });
 }
 
@@ -47,82 +46,153 @@ void TestApp::getCoordinates(const QString& city)
     QNetworkRequest request(apiUrl);
 
     // Connect the reply signal to the slot that handles the response
-    disconnect(manager, &QNetworkAccessManager::finished, this, &TestApp::weatherBringer);
-    connect(manager, &QNetworkAccessManager::finished, this, &TestApp::weatherBringer);
+    disconnect(manager, &QNetworkAccessManager::finished, nullptr, nullptr);
+    connect(manager, &QNetworkAccessManager::finished, this, &TestApp::handleGeocodingReply);
 
     manager->get(request); // Send the request
 }
 
-void TestApp::weatherBringer(QNetworkReply* reply)
+void TestApp::handleGeocodingReply(QNetworkReply* reply)
 {
-    // Handle any errors
     if (reply->error() != QNetworkReply::NoError) {
-        qDebug() << "Error in geocoding request:" << reply->errorString();
+        qDebug() << "Geocoding error:" << reply->errorString();
+        reply->deleteLater();
         return;
     }
 
-   // Parse the JSON response
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+    QByteArray response = reply->readAll();
 
-    if (!doc.isArray()) {
-        qDebug() << "Invalid JSON or no array found!";
-        return;
-    }
+    qDebug() << "Geocoding API Response:" << response; // Log the raw response
 
-    QJsonArray json = doc.array();
-
-    // If a result is found, extract the coordinates
-    if (!json.isEmpty()) {
-        double latitude = json[0].toObject()["lat"].toDouble();
-        double longitude = json[0].toObject()["lon"].toDouble();
-        qDebug() << "Coordinates of city: Latitude:" << latitude << ", Longitude:" << longitude;
-
-        // Use the coordinates (e.g., pass them to your weather API or display on the UI)
+    QPair<double, double> coordinates = parseGeocodingJson(response);
+    if (coordinates.first != 0.0 || coordinates.second != 0.0) {
+        weatherBringer(coordinates);
     }
     else {
-        qDebug() << "No results found for the city.";
+        info->setText("Could not fetch coordinates for the city.");
     }
 
-    // Clean up the reply object
     reply->deleteLater();
 }
 
-QString TestApp::parseWeatherJson(const QString& response) {
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(response.toUtf8());
-    if (jsonDoc.isObject()) {
-        QJsonObject jsonObj = jsonDoc.object();
-
-        QString name = jsonObj["location"].toObject()["name"].toString();
-        double tempC = jsonObj["current"].toObject()["temp_c"].toDouble();
-        double tempF = jsonObj["current"].toObject()["temp_f"].toDouble();
-        QString conditionText = jsonObj["current"].toObject()["condition"].toObject()["text"].toString();
-        double windMph = jsonObj["current"].toObject()["wind_mph"].toDouble();
-        int humidity = jsonObj["current"].toObject()["humidity"].toInt();
-        int cloud = jsonObj["current"].toObject()["cloud"].toInt();
-
-        return QString(
-            "City: %1\n"
-            "Temperature: %2°C / %3°F\n"
-            "Condition: %4\n"
-            "Wind Speed: %5 mph\n"
-            "Humidity: %6%%\n"
-            "Cloud Coverage: %7%%"
-        ).arg(name).arg(tempC).arg(tempF).arg(conditionText).arg(windMph).arg(humidity).arg(cloud);
+QPair<double, double> TestApp::parseGeocodingJson(const QByteArray& jsonData) {
+   
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    
+    if (doc.isNull() || !doc.isArray()) {
+        qDebug() << "Geocoding response is not a JSON array.";
+        return { 0.0, 0.0 };
     }
-    else {
-        return "Invalid JSON response.";
+
+    QJsonArray array = doc.array();
+    if (array.isEmpty()) {
+        qDebug() << "Geocoding response is empty.";
+        return { 0.0, 0.0 };
     }
+
+    QJsonObject firstResult = array.first().toObject();
+    QString latStr = firstResult.value("lat").toString();
+    QString lonStr = firstResult.value("lon").toString();
+
+    if (latStr.isEmpty() || lonStr.isEmpty()) {
+        qDebug() << "Missing latitude or longitude in geocoding response.";
+        return { 0.0, 0.0 };
+    }
+
+    double latitude = latStr.toDouble();
+    double longitude = lonStr.toDouble();
+
+    qDebug() << "Parsed coordinates: Latitude:" << latitude << ", Longitude:" << longitude;
+    return { latitude, longitude };
+}
+
+void TestApp::weatherBringer(const QPair<double, double>& coordinates) {
+    QString url = QString("https://api.open-meteo.com/v1/forecast?latitude=%1&longitude=%2&current_weather=true")
+        .arg(coordinates.first)
+        .arg(coordinates.second);
+    QUrl apiUrl(url);
+    qDebug() << "Weather API URL:" << url;
+
+    if (!apiUrl.isValid()) {
+        qDebug() << "Invalid weather API URL.";
+        return;
+    }
+
+    QNetworkRequest request(apiUrl);
+    disconnect(manager, &QNetworkAccessManager::finished, nullptr, nullptr);
+    connect(manager, &QNetworkAccessManager::finished, this, &TestApp::handleWeatherReply);
+
+    manager->get(request);
+}
+
+void TestApp::handleWeatherReply(QNetworkReply* reply) {
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug() << "Weather API error:" << reply->errorString();
+        reply->deleteLater();
+        return;
+    }
+
+    QByteArray response = reply->readAll();
+    if (response.isEmpty()) {
+        qDebug() << "Weather API response is empty.";
+        reply->deleteLater();
+        return;
+    }
+
+    qDebug() << "Weather API Response:" << response;
+
+    QString weatherInfo = parseWeatherJson(response);
+    updateWeatherLabel(weatherInfo);
+
+    reply->deleteLater();
+}
+
+QString TestApp::parseWeatherJson(const QByteArray& jsonData) {
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    if (!doc.isObject()) {
+        qDebug() << "Invalid weather JSON.";
+        return "Error: Could not parse weather data.";
+    }
+
+    QJsonObject root = doc.object();
+    if (!root.contains("current_weather")) {
+        qDebug() << "Missing 'current_weather' in weather JSON.";
+        return "Error: Weather data is incomplete.";
+    }
+    QJsonObject currentWeather = root["current_weather"].toObject();
+
+    int weatherCode = currentWeather["weathercode"].toInt();
+    QString weatherDescription = getWeatherDescription(weatherCode);
+
+    double temperature = currentWeather["temperature"].toDouble();
+    double windSpeed = currentWeather["windspeed"].toDouble();
+    QString weather = currentWeather["weathercode"].toString();
+
+    return QString(
+        "Temperature: %1°C\n"
+        "Wind Speed: %2 km/h\n"
+        "Weather: %3"
+    ).arg(temperature).arg(windSpeed).arg(weather);
 }
 
 void TestApp::updateWeatherLabel(const QString& weatherInfo) {
-    qDebug() << "Current thread:" << QThread::currentThread();
-    if (QThread::currentThread() != this->thread()) {
+    if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, [this, weatherInfo]() {
             info->setText(weatherInfo);
             }, Qt::QueuedConnection);
     }
     else {
         info->setText(weatherInfo);
+    }
+}
+
+QString TestApp::getWeatherDescription(int code) {
+    switch (code) {
+    case 0: return "Clear Sky";
+    case 1: return "Partly Cloudy";
+    case 2: return "Cloudy";
+        // Add more cases based on the API documentation
+    default: return "Unknown Weather Condition";
     }
 }
 

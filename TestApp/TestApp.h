@@ -17,9 +17,14 @@ public:
      ~TestApp();
 
 private slots:
-    void weatherBringer(QNetworkReply* reply);
-    void updateWeatherLabel(const QString& weatherInfo);
     void getCoordinates(const QString& city);
+    void handleGeocodingReply(QNetworkReply* reply);
+    QPair<double, double> parseGeocodingJson(const QByteArray& jsonData);
+    void weatherBringer(const QPair<double, double>& coordinates);
+    void handleWeatherReply(QNetworkReply* reply);
+    QString parseWeatherJson(const QByteArray& jsonData);
+    QString getWeatherDescription(int code);
+    void updateWeatherLabel(const QString& weatherInfo);
 
 private:
     QNetworkAccessManager* manager;
