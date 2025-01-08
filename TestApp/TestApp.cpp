@@ -4,6 +4,7 @@
 #include <QNetworkAccessManager>
 #include <QtWidgets/QApplication>
 #include <QNetworkRequest>
+#include <QResizeEvent>
 #include <qpushbutton>
 #include <QUrl>
 #include <qthread.h>
@@ -14,6 +15,12 @@
 TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)) {
 
     ui.setupUi(this);
+
+   backgroundManager = new BackgroundManager(ui.BG);
+
+    //return for path setting.
+    backgroundManager->setBackgroundImage("images/JoJoReference.png");
+
     ui.lineEdit->setPlaceholderText("Enter city name");
     ui.Display->setText("Display Weather");
     info = ui.info;
@@ -195,10 +202,19 @@ QString TestApp::getWeatherDescription(int code) {
     }
 }
 
+void TestApp::resizeEvent(QResizeEvent* event) {
+    QMainWindow::resizeEvent(event); // Call the base class implementation
+
+    if (backgroundManager) {
+        backgroundManager->adjustBackgroundSize();
+    }
+}
+
 TestApp::~TestApp() {
     qDebug() << "Destroying WeatherApp";
     if (manager) {
         manager->deleteLater();
         manager = nullptr;
     }
+    delete backgroundManager;
 }

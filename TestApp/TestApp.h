@@ -9,6 +9,8 @@
 #include <QNetworkReply>
 #include <qlabel>
 
+#include "BackgroundManager.h"
+
 class TestApp : public QMainWindow {
     Q_OBJECT
 
@@ -31,6 +33,13 @@ private:
     Ui::TestAppClass ui;
     QLabel* info; // Example label for displaying weather info
     QString parseWeatherJson(const QString& response);
+
+    BackgroundManager* backgroundManager;
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
+
+
 };
 
 #endif // TESTAPP_H

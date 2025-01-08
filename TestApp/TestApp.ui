@@ -27,13 +27,6 @@
      <item row="0" column="0">
       <widget class="QLineEdit" name="lineEdit"/>
      </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="Display">
-       <property name="text">
-        <string>PushButton</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="info">
        <property name="text">
@@ -41,7 +34,25 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="Display">
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QGraphicsView" name="BG">
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
+    <zorder>BG</zorder>
+    <zorder>lineEdit</zorder>
+    <zorder>Display</zorder>
+    <zorder>info</zorder>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
