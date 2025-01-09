@@ -31,23 +31,25 @@ void BackgroundManager::setBackgroundImage(const QString& path) {
         scene->addItem(backgroundItem);
     }
 
-    backgroundItem->setPixmap(pixmap);
-    backgroundItem->setOpacity(0.7);
-    adjustBackgroundSize();
+    // Resize the pixmap to fit the view's size
+    QSize viewSize = view->viewport()->size(); // Get the size of the view
+    QPixmap scaledPixmap = pixmap.scaled(viewSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+
+    backgroundItem->setPixmap(scaledPixmap);
+    backgroundItem->setOpacity(0.7); // Set transparency
+    backgroundItem->setZValue(-1);  // Ensure it's in the background
 }
 
-void BackgroundManager::adjustBackgroundSize() {
-    if (view && scene) {
-        QRectF rect = view->rect();
-        scene->setSceneRect(rect);
+void BackgroundManager::adjustBackground(const QSize& newSize) {
+    if (!backgroundItem) return;
 
-        if (backgroundItem) {
-            backgroundItem->setPixmap(backgroundItem->pixmap().scaled(
-                rect.size().toSize(),
-                Qt::KeepAspectRatioByExpanding,
-                Qt::SmoothTransformation));
-        }
-    }
+    // Adjust the background pixmap to fit the new size
+    QPixmap scaledPixmap = backgroundItem->pixmap().scaled(
+        newSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    backgroundItem->setPixmap(scaledPixmap);
+
+    // Update the scene rectangle to fit the new size
+    scene->setSceneRect(0, 0, newSize.width(), newSize.height());
 }
 
 void BackgroundManager::resizeBackground(int width, int height) {

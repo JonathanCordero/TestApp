@@ -12,7 +12,7 @@ class BackgroundManager {
 public:
     explicit BackgroundManager(QGraphicsView* view);
     void setBackgroundImage(const QString& path);
-    void adjustBackgroundSize();
+    void adjustBackground(const QSize& newSize);
     void resizeBackground(int width, int height);
 
 private:

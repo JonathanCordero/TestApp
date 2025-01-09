@@ -14,8 +14,8 @@
 
 TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)) {
 
-    ui.setupUi(this);
-
+   ui.setupUi(this);
+   ui.BG->setGeometry(this->rect());
    backgroundManager = new BackgroundManager(ui.BG);
 
     //return for path setting.
@@ -205,10 +205,12 @@ QString TestApp::getWeatherDescription(int code) {
 void TestApp::resizeEvent(QResizeEvent* event) {
     QMainWindow::resizeEvent(event); // Call the base class implementation
 
+    // Delegate resizing to BackgroundManager
     if (backgroundManager) {
-        backgroundManager->adjustBackgroundSize();
+        backgroundManager->adjustBackground(this->size());
     }
 }
+
 
 TestApp::~TestApp() {
     qDebug() << "Destroying WeatherApp";
