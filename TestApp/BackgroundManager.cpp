@@ -38,6 +38,9 @@ void BackgroundManager::setBackgroundImage(const QString& path) {
     backgroundItem->setPixmap(scaledPixmap);
     backgroundItem->setOpacity(0.7); // Set transparency
     backgroundItem->setZValue(-1);  // Ensure it's in the background
+
+
+
 }
 
 void BackgroundManager::adjustBackground(const QSize& newSize) {
