@@ -92,15 +92,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="WeatherList.cpp" />
     <QtRcc Include="TestApp.qrc" />
     <QtUic Include="TestApp.ui" />
     <QtMoc Include="TestApp.h" />
     <ClCompile Include="BackgroundManager.cpp" />
     <ClCompile Include="TestApp.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="Widget.ui" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundManager.h" />
+    <QtMoc Include="WeatherList.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="images\JoJoReference.png" />

@@ -8,8 +8,11 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <qlabel>
+#include "WeatherList.h"
 
 #include "BackgroundManager.h"
+
+
 
 class TestApp : public QMainWindow {
     Q_OBJECT
@@ -27,6 +30,7 @@ private slots:
     QString parseWeatherJson(const QByteArray& jsonData);
     QString getWeatherDescription(int code);
     void updateWeatherLabel(const QString& weatherInfo);
+    void showSecondScreen();
 
 private:
     QNetworkAccessManager* manager;
@@ -35,6 +39,7 @@ private:
     QString parseWeatherJson(const QString& response);
 
     BackgroundManager* backgroundManager;
+    WeatherList* secondScreen;
 
 protected:
     void resizeEvent(QResizeEvent* event) override;

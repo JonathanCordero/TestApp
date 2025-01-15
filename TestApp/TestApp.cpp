@@ -12,9 +12,10 @@
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 
-TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)) {
+TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)), secondScreen(nullptr) {
 
    ui.setupUi(this);
+
    ui.BG->setGeometry(this->rect());
    backgroundManager = new BackgroundManager(ui.BG);
 
@@ -23,8 +24,10 @@ TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAcc
 
     ui.lineEdit->setPlaceholderText("Enter city name");
     ui.Display->setText("Display Weather");
+    ui.Change->setText("Change Image");
     info = ui.info;
 
+    connect(ui.Change, &QPushButton::clicked, this, &TestApp::showSecondScreen);
     connect(ui.Display, &QPushButton::clicked, this, [this]() {
         qDebug() << "Button clicked!";
 
@@ -234,6 +237,13 @@ void TestApp::resizeEvent(QResizeEvent* event) {
     }
 }
 
+void TestApp::showSecondScreen() {
+    if (!secondScreen) {
+        secondScreen = new WeatherList(this); // Create the second screen
+    }
+    secondScreen->show();
+    this->hide(); // Hide the main screen if needed might not be needed but still
+}
 
 TestApp::~TestApp() {
     qDebug() << "Destroying WeatherApp";
