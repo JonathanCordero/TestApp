@@ -2,7 +2,6 @@
 
 #include "ui_TestApp.h"
 #include <QtWidgets/QMainWindow>
-#include <ui_TestApp.h>
 #ifndef TESTAPP_H
 #define TESTAPP_H
 #include <QNetworkAccessManager>

@@ -241,7 +241,9 @@ void TestApp::showSecondScreen() {
     if (!secondScreen) {
         secondScreen = new WeatherList(this); // Create the second screen
     }
-    secondScreen->show();
+    secondScreen->show(); // Show the second window
+    secondScreen->raise(); // Ensure it is on top
+    secondScreen->activateWindow();
     this->hide(); // Hide the main screen if needed might not be needed but still
 }
 
@@ -252,4 +254,5 @@ TestApp::~TestApp() {
         manager = nullptr;
     }
     delete backgroundManager;
+    delete secondScreen;
 }

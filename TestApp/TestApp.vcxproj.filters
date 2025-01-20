@@ -66,7 +66,7 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="Widget.ui">
+    <QtUic Include="WeatherList.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

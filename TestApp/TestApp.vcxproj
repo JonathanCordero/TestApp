@@ -99,7 +99,9 @@
     <ClCompile Include="BackgroundManager.cpp" />
     <ClCompile Include="TestApp.cpp" />
     <ClCompile Include="main.cpp" />
-    <QtUic Include="Widget.ui" />
+    <QtUic Include="WeatherList.ui">
+      <FileType>Document</FileType>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundManager.h" />
