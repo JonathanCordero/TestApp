@@ -12,10 +12,19 @@
 #include <qjsondocument.h>
 #include <qjsonobject.h>
 
-TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)), secondScreen(nullptr) {
+TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAccessManager(this)), stackedWidget(nullptr), secondScreen(nullptr) {
 
    ui.setupUi(this);
 
+   stackedWidget = findChild<QStackedWidget*>("stackedWidget");
+   if (stackedWidget) {
+       // Create the secondary screen
+       secondScreen = new WeatherList(this);
+       stackedWidget->addWidget(secondScreen);
+
+       // Connect button to switch screens
+       connect(ui.Change, &QPushButton::clicked, this, &TestApp::onChangeButtonClicked);
+   }
    ui.BG->setGeometry(this->rect());
    backgroundManager = new BackgroundManager(ui.BG);
 
@@ -27,7 +36,7 @@ TestApp::TestApp(QWidget* parent) : QMainWindow(parent), manager(new QNetworkAcc
     ui.Change->setText("Change Image");
     info = ui.info;
 
-    connect(ui.Change, &QPushButton::clicked, this, &TestApp::showSecondScreen);
+    //connect(ui.Change, &QPushButton::clicked, this, &TestApp::showSecondScreen);
     connect(ui.Display, &QPushButton::clicked, this, [this]() {
         qDebug() << "Button clicked!";
 
@@ -245,6 +254,13 @@ void TestApp::showSecondScreen() {
     secondScreen->raise(); // Ensure it is on top
     secondScreen->activateWindow();
     this->hide(); // Hide the main screen if needed might not be needed but still
+}
+
+void TestApp::onChangeButtonClicked() {
+    if (stackedWidget) {
+        // Switch to the second screen
+        stackedWidget->setCurrentWidget(secondScreen);
+    }
 }
 
 TestApp::~TestApp() {

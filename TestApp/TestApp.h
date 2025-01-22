@@ -7,8 +7,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <qlabel>
-#include "WeatherList.h"
+#include <QStackedWidget>
 
+#include "WeatherList.h"
 #include "BackgroundManager.h"
 
 
@@ -30,12 +31,14 @@ private slots:
     QString getWeatherDescription(int code);
     void updateWeatherLabel(const QString& weatherInfo);
     void showSecondScreen();
+    void onChangeButtonClicked();
 
 private:
     QNetworkAccessManager* manager;
     Ui::TestAppClass ui;
+    QStackedWidget* stackedWidget;
     QLabel* info; // Example label for displaying weather info
-    QString parseWeatherJson(const QString& response);
+    QString parseWeatherJson(const QString& response); //ill remove it eventually
 
     BackgroundManager* backgroundManager;
     WeatherList* secondScreen;
